@@ -359,9 +359,10 @@
   resetBtn.addEventListener('click', resetSession);
 
   // =========================================================================
-  // DRAGGING THE CAT MOVES THE REAL WINDOW (Electron only)
-  // The cat stage also uses -webkit-app-region: drag as a native fallback,
-  // but we handle it manually so we can clamp to the screen.
+  // DRAGGING THE CAT MOVES THE REAL WINDOW (Electron only).
+  // We handle drag manually (mousedown + mousemove -> IPC moveBy) so every move
+  // is clamped to the usable screen by the main process. The buttons/panel are
+  // marked .no-drag so they stay clickable while the cat area drags.
   // =========================================================================
   if (hasDesktop) {
     const stage = $('catStage');

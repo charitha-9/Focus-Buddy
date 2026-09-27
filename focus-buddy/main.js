@@ -47,7 +47,7 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,   // security: isolate renderer
       nodeIntegration: false,   // security: no node in renderer
-      sandbox: false
+      sandbox: true             // security: fully sandboxed renderer
     }
   });
 

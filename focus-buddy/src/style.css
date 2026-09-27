@@ -42,8 +42,9 @@ html, body {
   cursor: default;
 }
 
-/* draggable vs clickable regions for the frameless window */
-.drag-zone { -webkit-app-region: drag; }
+/* Clickable regions inside the window stay interactive. The cat stage is the
+   drag handle, but we move the window manually via IPC (not -webkit-app-region)
+   so the position can be clamped to the usable screen. */
 .no-drag,
 .no-drag * { -webkit-app-region: no-drag; }
 
