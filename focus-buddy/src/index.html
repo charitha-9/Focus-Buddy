@@ -69,6 +69,17 @@
 
     <!-- COMPACT CONTROL PANEL (not draggable, fully clickable) -->
     <div class="panel no-drag">
+      <div class="panel-top">
+        <div class="streak" data-testid="streak-counter" title="Sessions finished today">
+          <span class="paw">🐾</span><span id="streakCount" data-testid="streak-count">0</span>
+        </div>
+        <div class="coat" data-testid="coat-picker">
+          <button class="swatch active" data-coat="gray" data-testid="coat-gray" title="Gray tabby"></button>
+          <button class="swatch" data-coat="black" data-testid="coat-black" title="Black cat"></button>
+          <button class="swatch" data-coat="orange" data-testid="coat-orange" title="Orange tabby"></button>
+          <button class="sound-toggle on" id="soundToggle" data-testid="sound-toggle" title="Finish sound on/off">♪</button>
+        </div>
+      </div>
       <div id="clock" class="clock" data-testid="timer-display">25:00</div>
 
       <div class="presets" data-testid="preset-row">

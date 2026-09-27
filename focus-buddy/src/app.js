@@ -17,6 +17,79 @@
   const customSet = $('customSet');
   const chips = Array.from(document.querySelectorAll('.chip'));
 
+  // ---- extra feature elements ----
+  const APP = $('app');
+  const streakCountEl = $('streakCount');
+  const soundToggle = $('soundToggle');
+  const swatches = Array.from(document.querySelectorAll('.swatch'));
+
+  // ---- Cat Wardrobe: coat colour (persisted) ----
+  function applyCoat(coat) {
+    APP.classList.remove('app-coat-black', 'app-coat-orange');
+    if (coat === 'black') APP.classList.add('app-coat-black');
+    else if (coat === 'orange') APP.classList.add('app-coat-orange');
+    swatches.forEach((s) => s.classList.toggle('active', s.dataset.coat === coat));
+    try { localStorage.setItem('fb_coat', coat); } catch (e) {}
+  }
+  swatches.forEach((s) => s.addEventListener('click', () => applyCoat(s.dataset.coat)));
+  applyCoat((function () { try { return localStorage.getItem('fb_coat') || 'gray'; } catch (e) { return 'gray'; } })());
+
+  // ---- Focus Streaks: sessions finished today (persisted, resets daily) ----
+  function todayKey() {
+    const d = new Date();
+    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+  }
+  function loadStreak() {
+    try {
+      const raw = JSON.parse(localStorage.getItem('fb_streak') || '{}');
+      if (raw.date === todayKey()) return raw.count || 0;
+    } catch (e) {}
+    return 0;
+  }
+  let streak = loadStreak();
+  streakCountEl.textContent = streak;
+  function bumpStreak() {
+    streak += 1;
+    streakCountEl.textContent = streak;
+    try { localStorage.setItem('fb_streak', JSON.stringify({ date: todayKey(), count: streak })); } catch (e) {}
+  }
+
+  // ---- Finish Chime: tiny retro (square-wave) arpeggio via Web Audio ----
+  let soundOn = (function () { try { return localStorage.getItem('fb_sound') !== 'off'; } catch (e) { return true; } })();
+  let audioCtx = null;
+  function ensureAudio() {
+    if (!audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+    }
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+  function playChime() {
+    const ctx = ensureAudio();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {  // C5 E5 G5 C6
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'square';
+      o.frequency.value = f;
+      const t = now + i * 0.12;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.11, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0008, t + 0.3);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(t); o.stop(t + 0.32);
+    });
+  }
+  function updateSoundBtn() { soundToggle.classList.toggle('on', soundOn); }
+  updateSoundBtn();
+  soundToggle.addEventListener('click', () => {
+    soundOn = !soundOn;
+    try { localStorage.setItem('fb_sound', soundOn ? 'on' : 'off'); } catch (e) {}
+    updateSoundBtn();
+    if (soundOn) playChime();   // preview when turning on
+  });
+
   let mode = 'idle';   // idle | study | paused | done
 
   // ---- timer ----
@@ -178,6 +251,7 @@
   // =========================================================================
   function startSession() {
     mode = 'study';
+    ensureAudio();          // unlock audio on this user gesture
     bubble.hide();
     cat.stopIdleLife();
     clock.classList.add('running');
@@ -229,6 +303,8 @@
     startPauseBtn.classList.remove('paused');
     setControlsEnabled(true);
     bubble.show(window.FB_SAY.doneFmt(minutes), { autoHideMs: 0 });
+    bumpStreak();
+    if (soundOn) playChime();
 
     // Celebrate for a few seconds, then settle back to idle.
     setTimeout(() => {

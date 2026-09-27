@@ -2,14 +2,15 @@
 // Responsible for: creating the transparent, frameless, always-on-top desktop
 // pet window, and moving that real window around the Windows desktop safely.
 
-const { app, BrowserWindow, ipcMain, screen } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, Tray, Menu, globalShortcut, nativeImage } = require('electron');
 const path = require('path');
 
 // Compact desktop-pet window size (requirement: ~180-240px wide).
 const WIN_WIDTH = 210;
-const WIN_HEIGHT = 250;
+const WIN_HEIGHT = 300;
 
 let win = null;
+let tray = null;
 
 // Return the work area (screen minus taskbar) of the display the window is on.
 function currentWorkArea() {
@@ -61,12 +62,40 @@ function createWindow() {
   win.loadFile(path.join(__dirname, 'src', 'index.html'));
 }
 
+// Show the pet if hidden, hide it if visible ("tuck it away").
+function toggleWindow() {
+  if (!win) return;
+  if (win.isVisible()) win.hide();
+  else { win.show(); win.focus(); }
+}
+
+// System tray icon + right-click menu.
+function createTray() {
+  const iconPath = path.join(__dirname, 'src', 'assets', 'tray.png');
+  let image = nativeImage.createFromPath(iconPath);
+  if (image.isEmpty()) return;              // no icon file -> skip tray safely
+  image = image.resize({ width: 18, height: 18 });
+  tray = new Tray(image);
+  tray.setToolTip('Focus Buddy');
+  tray.setContextMenu(Menu.buildFromTemplate([
+    { label: 'Show / Hide  (Ctrl+Shift+F)', click: toggleWindow },
+    { type: 'separator' },
+    { label: 'Quit Focus Buddy', click: () => app.quit() }
+  ]));
+  tray.on('click', toggleWindow);
+}
+
 app.whenReady().then(() => {
   createWindow();
+  createTray();
+  // Global hotkey to summon / hide the cat from anywhere.
+  globalShortcut.register('CommandOrControl+Shift+F', toggleWindow);
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 });
+
+app.on('will-quit', () => globalShortcut.unregisterAll());
 
 app.on('window-all-closed', () => {
   app.quit();

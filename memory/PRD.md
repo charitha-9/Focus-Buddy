@@ -48,6 +48,18 @@ timer that lives on the desktop.
   Reset restores duration + bubble.
 - Theme: warm cozy retro pixel UI, gray tabby cat.
 
+### Update 2 (2026-06-27) — 4 enhancements
+- Cat Wardrobe: coat colour switch gray/black/orange (CSS var palette override,
+  persisted in localStorage 'fb_coat'). Swatches in panel-top. Verified.
+- Finish Chime: tiny retro square-wave arpeggio via Web Audio (no file/network);
+  plays on session finish; mutable sound toggle persisted 'fb_sound'. Verified toggle.
+- Focus Streaks: daily counter of finished sessions, resets each day, persisted
+  'fb_streak'. Shown as 🐾 N in panel-top. Increments in finishSession.
+- Tray Hideaway: system Tray (icon at src/assets/tray.png, generated locally via
+  scripts/make_tray_icon.py with PIL) + global hotkey Ctrl+Shift+F to show/hide;
+  tray menu Show/Hide + Quit. Window height bumped 250→300 to fit new row.
+  Electron boots cleanly with tray+shortcut under xvfb (no app errors).
+
 ## Notes / not runtime-tested in container
 - Real cross-desktop window movement + dragging are Windows/Electron-only and
   cannot be exercised in this headless Linux container; code follows standard

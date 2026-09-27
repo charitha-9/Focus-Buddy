@@ -552,3 +552,78 @@ html, body {
 /* remove number spinners */
 .custom-input::-webkit-outer-spin-button,
 .custom-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* =========================================================================
+   PANEL TOP STRIP: daily streak + coat picker + sound toggle
+   ========================================================================= */
+.panel-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1px;
+}
+.streak {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--accent-2);
+}
+.streak .paw { font-size: 11px; filter: saturate(0.9); }
+
+.coat { display: flex; align-items: center; gap: 4px; }
+.swatch {
+  width: 15px; height: 15px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: transform .08s ease, border-color .12s ease;
+}
+.swatch:hover { transform: translateY(-1px); }
+.swatch.active { border-color: var(--accent-2); box-shadow: 0 0 0 2px var(--accent); }
+.swatch[data-coat="gray"]   { background: #a7adb5; }
+.swatch[data-coat="black"]  { background: #3b3e45; }
+.swatch[data-coat="orange"] { background: #f0a24e; }
+
+.sound-toggle {
+  width: 18px; height: 18px;
+  margin-left: 3px;
+  padding: 0;
+  line-height: 12px;
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--bg-2);
+  border: 2px solid var(--border);
+  border-radius: 5px;
+  cursor: pointer;
+}
+.sound-toggle.on { color: var(--accent-2); border-color: var(--border-hi); }
+.sound-toggle:not(.on) { opacity: 0.55; text-decoration: line-through; }
+
+/* =========================================================================
+   COAT (fur colour) VARIANTS - override the palette on the whole app
+   ========================================================================= */
+#app.app-coat-black {
+  --fur:        #3b3e45;
+  --fur-dark:   #2a2d33;
+  --fur-shadow: #1c1e22;
+  --belly:      #5a5e66;
+  --outline:    #131417;
+  --ear-inner:  #d98fa0;
+  --nose:       #e0879a;
+  --eye:        #ecdf5a;   /* bright green-gold so eyes read on black fur */
+  --eye-shine:  #fffbe0;
+}
+#app.app-coat-orange {
+  --fur:        #f0a24e;
+  --fur-dark:   #d67e2f;
+  --fur-shadow: #b3641c;
+  --belly:      #ffe2b4;
+  --outline:    #6b3a11;
+  --ear-inner:  #f7b98a;
+  --nose:       #d76f7e;
+  --eye:        #2f7d4f;   /* green eyes */
+  --eye-shine:  #eafff0;
+}
