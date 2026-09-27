@@ -1,7 +1,7 @@
 // app.js
-// The conductor. It wires the UI buttons to the timer, drives the cat's
-// behaviour, moves the real desktop window during study mode, and schedules
-// the friendly mid-study prompts.
+// The conductor. Wires the UI to the timer, drives the cat's behaviour, moves
+// the real desktop window during study mode, and shows/hides the timer panel.
+// CAT-ONLY MODE is the default: the panel only appears when you click the cat.
 
 (function () {
   const $ = (id) => document.getElementById(id);
@@ -16,6 +16,7 @@
   const customInput = $('customInput');
   const customSet = $('customSet');
   const chips = Array.from(document.querySelectorAll('.chip'));
+  const panel = document.querySelector('.panel');
 
   // ---- extra feature elements ----
   const APP = $('app');
@@ -92,6 +93,14 @@
 
   let mode = 'idle';   // idle | study | paused | done
 
+  // =========================================================================
+  // PANEL VISIBILITY (cat-only mode is the default)
+  // =========================================================================
+  function setPanel(open) {
+    panel.classList.toggle('hidden', !open);
+    if (hasDesktop) window.focusBuddy.setPanel(open);   // resize the real window
+  }
+
   // ---- timer ----
   const timer = new StudyTimer({
     onTick: (remaining) => { clock.textContent = StudyTimer.format(remaining); },
@@ -136,7 +145,7 @@
 
     // Do a small in-place behaviour, then go back to idle and schedule next.
     _idleBehaviour() {
-      const choices = ['sit', 'groom', 'stretch', 'look', 'walkInPlace'];
+      const choices = ['sit', 'groom', 'stretch', 'look', 'sleep', 'walkInPlace'];
       const c = choices[Math.floor(Math.random() * choices.length)];
       let hold = 2600;
 
@@ -146,7 +155,7 @@
         cat.setState('walk'); hold = 2000;
       } else {
         cat.setState(c);
-        hold = c === 'stretch' ? 1600 : c === 'groom' ? 2600 : 3200;
+        hold = c === 'stretch' ? 1600 : c === 'sleep' ? 4200 : c === 'groom' ? 2600 : 3200;
       }
 
       this.timers.push(setTimeout(() => {
@@ -172,7 +181,7 @@
         ty = b.y + (Math.random() * 2 - 1) * 120;
       }
 
-      // Keep inside the usable desktop.
+      // Keep inside the usable desktop (never stuck at / beyond the edges).
       tx = Math.max(wa.x, Math.min(wa.x + wa.width - b.width, tx));
       ty = Math.max(wa.y, Math.min(wa.y + wa.height - b.height, ty));
 
@@ -210,7 +219,7 @@
   };
 
   // =========================================================================
-  // MID-STUDY PROMPTS
+  // MID-STUDY PROMPTS (small, non-blocking, dismissible; never opens the panel)
   // =========================================================================
   const prompts = {
     timers: [],
@@ -253,6 +262,7 @@
     mode = 'study';
     ensureAudio();          // unlock audio on this user gesture
     bubble.hide();
+    setPanel(false);        // hide the timer box -> back to cat-only desktop mode
     cat.stopIdleLife();
     clock.classList.add('running');
     startPauseBtn.textContent = 'Pause';
@@ -274,6 +284,7 @@
     startPauseBtn.textContent = 'Resume';
     startPauseBtn.classList.add('paused');
     bubble.show(window.FB_SAY.pause, { autoHideMs: 6000 });
+    // Panel stays open here so the user can press Resume.
   }
 
   function resetSession() {
@@ -281,6 +292,7 @@
     timer.reset();
     movement.stop();
     prompts.stop();
+    setPanel(false);        // return to cat-only idle mode
     cat.setState('idle');
     cat.setDirection('right');
     cat.startIdleLife();
@@ -296,17 +308,18 @@
     const minutes = Math.round(timer.durationSec / 60);
     movement.stop();
     prompts.stop();
+    setPanel(false);        // NO timer box on completion - cat-only + message
     cat.setDirection('right');
     cat.setState('celebrate');
     clock.classList.remove('running');
     startPauseBtn.textContent = 'Start';
     startPauseBtn.classList.remove('paused');
     setControlsEnabled(true);
-    bubble.show(window.FB_SAY.doneFmt(minutes), { autoHideMs: 0 });
+    bubble.show(window.FB_SAY.doneFmt(minutes), { autoHideMs: 0 });  // small msg near cat
     bumpStreak();
     if (soundOn) playChime();
 
-    // Celebrate for a few seconds, then settle back to idle.
+    // Celebrate for a few seconds, then settle back to cat-only idle/roaming.
     setTimeout(() => {
       if (mode === 'done') {
         cat.setState('idle');
@@ -359,37 +372,42 @@
   resetBtn.addEventListener('click', resetSession);
 
   // =========================================================================
-  // DRAGGING THE CAT MOVES THE REAL WINDOW (Electron only).
-  // We handle drag manually (mousedown + mousemove -> IPC moveBy) so every move
-  // is clamped to the usable screen by the main process. The buttons/panel are
-  // marked .no-drag so they stay clickable while the cat area drags.
+  // CLICK vs DRAG on the cat.
+  //  - A small press-and-release (no real movement) = CLICK -> toggle the panel.
+  //  - A press-and-move = DRAG -> move the REAL desktop window (Electron only).
+  // The panel and bubble are .no-drag so their clicks never trigger this.
   // =========================================================================
-  if (hasDesktop) {
-    const stage = $('catStage');
-    let dragging = false, last = null;
+  const stage = $('catStage');
+  let drag = null;
 
-    stage.addEventListener('mousedown', (e) => {
-      if (e.target.closest('.no-drag')) return;   // let buttons work
-      dragging = true;
-      last = { x: e.screenX, y: e.screenY };
-      e.preventDefault();
-    });
-    window.addEventListener('mousemove', (e) => {
-      if (!dragging) return;
-      const dx = e.screenX - last.x;
-      const dy = e.screenY - last.y;
-      last = { x: e.screenX, y: e.screenY };
-      window.focusBuddy.moveBy(dx, dy);
-    });
-    window.addEventListener('mouseup', () => { dragging = false; });
-  }
+  stage.addEventListener('mousedown', (e) => {
+    if (e.target.closest('.no-drag')) return;   // buttons / bubble stay clickable
+    drag = { x: e.screenX, y: e.screenY, moved: 0 };
+    e.preventDefault();
+  });
+  window.addEventListener('mousemove', (e) => {
+    if (!drag) return;
+    const dx = e.screenX - drag.x;
+    const dy = e.screenY - drag.y;
+    drag.moved += Math.abs(dx) + Math.abs(dy);
+    if (hasDesktop) window.focusBuddy.moveBy(dx, dy);   // real window drag
+    drag.x = e.screenX;
+    drag.y = e.screenY;
+  });
+  window.addEventListener('mouseup', () => {
+    if (!drag) return;
+    const wasClick = drag.moved < 6;                    // tiny movement = a click
+    drag = null;
+    if (wasClick) setPanel(panel.classList.contains('hidden'));
+  });
 
   // ---- close button ----
   $('closeBtn').addEventListener('click', () => {
     if (hasDesktop) window.focusBuddy.quit();
   });
 
-  // ---- boot ----
+  // ---- boot: CAT-ONLY mode ----
+  setPanel(false);
   cat.setState('idle');
   cat.startIdleLife();
 

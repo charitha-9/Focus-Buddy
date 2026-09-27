@@ -1,29 +1,33 @@
 // Focus Buddy - Electron MAIN process.
-// Responsible for: creating the transparent, frameless, always-on-top desktop
-// pet window, and moving that real window around the Windows desktop safely.
+// Creates the transparent, frameless, always-on-top CAT window and moves that
+// real window around the Windows desktop. Also grows/shrinks the window when
+// the (hidden-by-default) timer panel is opened/closed.
 
 const { app, BrowserWindow, ipcMain, screen, Tray, Menu, globalShortcut, nativeImage } = require('electron');
 const path = require('path');
 
-// Compact desktop-pet window size (requirement: ~180-240px wide).
+// Window sizes. Cat-only mode is compact; the timer panel mode is taller.
 const WIN_WIDTH = 210;
-const WIN_HEIGHT = 300;
+const WIN_FULL = 300;    // cat + timer panel
+const WIN_COMPACT = 150; // cat only
 
 let win = null;
 let tray = null;
 
 // Return the work area (screen minus taskbar) of the display the window is on.
 function currentWorkArea() {
-  const b = win ? win.getBounds() : { x: 0, y: 0, width: WIN_WIDTH, height: WIN_HEIGHT };
+  const b = win ? win.getBounds() : { x: 0, y: 0, width: WIN_WIDTH, height: WIN_COMPACT };
   const display = screen.getDisplayMatching(b);
   return display.workArea; // { x, y, width, height }
 }
 
 // Keep the window fully inside the usable desktop so it never disappears.
+// Uses the window's CURRENT size (it changes between cat-only / panel modes).
 function clamp(x, y) {
   const wa = currentWorkArea();
-  const maxX = wa.x + wa.width - WIN_WIDTH;
-  const maxY = wa.y + wa.height - WIN_HEIGHT;
+  const b = win ? win.getBounds() : { width: WIN_WIDTH, height: WIN_COMPACT };
+  const maxX = wa.x + wa.width - b.width;
+  const maxY = wa.y + wa.height - b.height;
   const cx = Math.round(Math.max(wa.x, Math.min(maxX, x)));
   const cy = Math.round(Math.max(wa.y, Math.min(maxY, y)));
   return { x: cx, y: cy };
@@ -34,7 +38,7 @@ function createWindow() {
 
   win = new BrowserWindow({
     width: WIN_WIDTH,
-    height: WIN_HEIGHT,
+    height: WIN_COMPACT,   // launches in cat-only mode (panel hidden)
     transparent: true,      // see-through background
     frame: false,           // no title bar / borders
     resizable: false,
@@ -56,7 +60,7 @@ function createWindow() {
 
   // Start position: lower-right of the primary monitor, above the taskbar.
   const startX = primary.x + primary.width - WIN_WIDTH - 24;
-  const startY = primary.y + primary.height - WIN_HEIGHT - 24;
+  const startY = primary.y + primary.height - WIN_COMPACT - 24;
   win.setPosition(Math.round(startX), Math.round(startY));
 
   win.loadFile(path.join(__dirname, 'src', 'index.html'));
@@ -101,7 +105,7 @@ app.on('window-all-closed', () => {
   app.quit();
 });
 
-// ---------------- IPC: the renderer asks main to move the real window --------
+// ---------------- IPC: the renderer asks main to move / resize the window ---
 
 // Give the renderer the usable desktop bounds.
 ipcMain.handle('fb:get-workarea', () => currentWorkArea());
@@ -122,6 +126,19 @@ ipcMain.on('fb:move-by', (_e, { dx, dy }) => {
   const b = win.getBounds();
   const p = clamp(b.x + dx, b.y + dy);
   win.setPosition(p.x, p.y);
+});
+
+// Open/close the timer panel: resize the REAL window between the compact
+// cat-only height and the full cat+panel height. Anchors the bottom edge so
+// the cat appears to stay put while the panel unfolds beneath it.
+ipcMain.on('fb:set-compact', (_e, { open }) => {
+  if (!win) return;
+  const b = win.getBounds();
+  const h = open ? WIN_FULL : WIN_COMPACT;
+  if (b.height === h) return;
+  const newY = b.y + b.height - h;          // keep the bottom edge anchored
+  const p = clamp(b.x, newY);
+  win.setBounds({ x: p.x, y: p.y, width: WIN_WIDTH, height: h });
 });
 
 ipcMain.on('fb:quit', () => app.quit());

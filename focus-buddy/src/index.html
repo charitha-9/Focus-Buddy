@@ -60,7 +60,7 @@
       <div class="joy" aria-hidden="true"><span>♥</span><span>♥</span><span>♥</span></div>
 
       <!-- speech bubble -->
-      <div id="bubble" class="bubble hidden" data-testid="speech-bubble">
+      <div id="bubble" class="bubble hidden no-drag" data-testid="speech-bubble">
         <button id="bubbleClose" class="bubble-x no-drag" data-testid="bubble-close">×</button>
         <div id="bubbleText" class="bubble-text" data-testid="bubble-text"></div>
         <div id="bubbleActions" class="bubble-actions"></div>
@@ -68,7 +68,7 @@
     </div>
 
     <!-- COMPACT CONTROL PANEL (not draggable, fully clickable) -->
-    <div class="panel no-drag">
+    <div class="panel no-drag hidden">
       <div class="panel-top">
         <div class="streak" data-testid="streak-counter" title="Sessions finished today">
           <span class="paw">🐾</span><span id="streakCount" data-testid="streak-count">0</span>

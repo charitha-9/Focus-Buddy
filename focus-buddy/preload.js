@@ -10,5 +10,6 @@ contextBridge.exposeInMainWorld('focusBuddy', {
   getBounds: () => ipcRenderer.invoke('fb:get-bounds'),
   setPosition: (x, y) => ipcRenderer.send('fb:set-position', { x, y }),
   moveBy: (dx, dy) => ipcRenderer.send('fb:move-by', { dx, dy }),
+  setPanel: (open) => ipcRenderer.send('fb:set-compact', { open }),
   quit: () => ipcRenderer.send('fb:quit')
 });

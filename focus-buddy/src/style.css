@@ -51,7 +51,7 @@ html, body {
 .app {
   position: relative;
   width: 210px;
-  height: 250px;
+  height: auto;          /* shrinks to cat-only when the panel is hidden */
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -462,7 +462,7 @@ html, body {
    CONTROL PANEL
    ========================================================================= */
 .panel {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   background: var(--bg);
   border: 3px solid var(--border);
   border-radius: 10px;
@@ -472,6 +472,7 @@ html, body {
   flex-direction: column;
   gap: 5px;
 }
+.panel.hidden { display: none; }   /* cat-only mode */
 
 .clock {
   text-align: center;
