@@ -1,0 +1,28 @@
+{
+  "name": "focus-buddy",
+  "version": "1.0.0",
+  "description": "Focus Buddy - a tiny pixel-art cat desktop study companion for Windows",
+  "main": "main.js",
+  "author": "Focus Buddy",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^31.7.6",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.focusbuddy.app",
+    "productName": "Focus Buddy",
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*"
+    ],
+    "win": {
+      "target": "nsis"
+    }
+  }
+}

@@ -1,0 +1,554 @@
+/* ===========================================================================
+   Focus Buddy - pixel cat + tiny retro study UI
+   Theme: warm cozy retro pixel. Cat: gray tabby.
+   =========================================================================== */
+
+:root {
+  /* gray tabby palette */
+  --fur:        #a7adb5;
+  --fur-dark:   #7b828b;
+  --fur-shadow: #5f656d;
+  --belly:      #dfe3e8;
+  --outline:    #2f3237;
+  --ear-inner:  #e79aa6;
+  --nose:       #e6889a;
+  --eye:        #23272c;
+  --eye-shine:  #eafcff;
+
+  /* warm cozy UI */
+  --bg:        #2a2420;
+  --bg-2:      #362e28;
+  --border:    #6b4f38;
+  --border-hi: #a9764a;
+  --accent:    #f2a25b;   /* warm orange */
+  --accent-2:  #ffd8a3;   /* cream */
+  --good:      #8bd17c;
+  --text:      #ffeede;
+  --muted:     #c8a98c;
+
+  --font: "Courier New", ui-monospace, "DejaVu Sans Mono", monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: transparent;   /* transparent Electron window */
+  overflow: hidden;
+  font-family: var(--font);
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
+}
+
+/* draggable vs clickable regions for the frameless window */
+.drag-zone { -webkit-app-region: drag; }
+.no-drag,
+.no-drag * { -webkit-app-region: no-drag; }
+
+.app {
+  position: relative;
+  width: 210px;
+  height: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 6px;
+  gap: 4px;
+}
+
+/* -------- close button -------- */
+.close-btn {
+  position: absolute;
+  top: 4px; right: 4px;
+  z-index: 40;
+  width: 18px; height: 18px;
+  line-height: 14px;
+  padding: 0;
+  color: var(--muted);
+  background: rgba(0,0,0,0.25);
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  font-family: var(--font);
+  font-size: 13px;
+  cursor: pointer;
+}
+.close-btn:hover { color: #fff; border-color: var(--border-hi); }
+
+/* =========================================================================
+   CAT STAGE
+   ========================================================================= */
+.cat-stage {
+  position: relative;
+  height: 118px;
+  flex: 0 0 auto;
+  cursor: grab;
+}
+.cat-stage:active { cursor: grabbing; }
+
+.cat-shadow {
+  position: absolute;
+  left: 50%; bottom: 8px;
+  width: 56px; height: 10px;
+  margin-left: -28px;
+  background: rgba(0,0,0,0.30);
+  border-radius: 50%;
+  filter: blur(1px);
+  transition: transform .15s ease;
+  z-index: 0;
+}
+
+/* =========================================================================
+   THE CAT  (72 x 62). One unified outline via stacked drop-shadows.
+   Default faces RIGHT (head right, tail left).
+   ========================================================================= */
+.cat {
+  position: absolute;
+  left: 50%; bottom: 10px;
+  width: 72px; height: 62px;
+  margin-left: -36px;
+  z-index: 2;
+  image-rendering: pixelated;
+  transform-origin: 50% 100%;
+  filter:
+    drop-shadow(2px 0 0 var(--outline))
+    drop-shadow(-2px 0 0 var(--outline))
+    drop-shadow(0 2px 0 var(--outline))
+    drop-shadow(0 -2px 0 var(--outline));
+}
+.cat.face-left { transform: scaleX(-1); }
+
+/* --- body --- */
+.body {
+  position: absolute;
+  left: 12px; bottom: 12px;
+  width: 46px; height: 22px;
+  background: var(--fur);
+  border-radius: 15px 9px 6px 6px;
+  overflow: hidden;
+  z-index: 3;
+}
+.body .belly {
+  position: absolute;
+  left: 8px; bottom: 0;
+  width: 34px; height: 9px;
+  background: var(--belly);
+  border-radius: 8px 8px 0 0;
+}
+.body .stripe {
+  position: absolute;
+  top: 0; width: 4px; height: 14px;
+  background: var(--fur-dark);
+  border-radius: 0 0 2px 2px;
+}
+.body .s1 { left: 12px; }
+.body .s2 { left: 20px; }
+.body .s3 { left: 28px; }
+
+/* --- legs (4). transform-origin top so they swing from the hip --- */
+.leg {
+  position: absolute;
+  bottom: 0;
+  width: 9px; height: 15px;
+  background: var(--fur);
+  border-radius: 3px 3px 4px 4px;
+  transform-origin: 50% 2px;
+}
+.leg::after {  /* paw tip */
+  content: "";
+  position: absolute;
+  left: 0; bottom: 0;
+  width: 9px; height: 4px;
+  background: var(--belly);
+  border-radius: 0 0 4px 4px;
+}
+.leg-back-far   { left: 17px; background: var(--fur-dark); z-index: 1; }
+.leg-front-far  { left: 42px; background: var(--fur-dark); z-index: 1; }
+.leg-back-near  { left: 21px; z-index: 4; }
+.leg-front-near { left: 47px; z-index: 4; }
+.leg-back-far::after, .leg-front-far::after { background: var(--fur-shadow); }
+
+/* --- tail (back / left) --- */
+.tail {
+  position: absolute;
+  left: 4px; bottom: 16px;
+  width: 8px; height: 8px;
+  transform-origin: 50% 100%;
+  z-index: 2;
+}
+.tail .t {
+  position: absolute;
+  width: 8px; height: 8px;
+  background: var(--fur);
+  border-radius: 3px;
+}
+.tail .t1 { bottom: 0;  left: 0; }
+.tail .t2 { bottom: 6px; left: -3px; }
+.tail .t3 { bottom: 12px; left: -3px; background: var(--fur-dark); }
+.tail .t4 { bottom: 18px; left: 1px; background: var(--fur-dark); }
+.tail .tip { border-radius: 4px 4px 3px 3px; }
+
+/* --- head (front / right) --- */
+.head {
+  position: absolute;
+  left: 40px; bottom: 22px;
+  width: 28px; height: 25px;
+  background: var(--fur);
+  border-radius: 9px 11px 9px 7px;
+  transform-origin: 40% 100%;
+  z-index: 5;
+}
+.head .hstripe {
+  position: absolute;
+  top: 2px; left: 12px;
+  width: 4px; height: 8px;
+  background: var(--fur-dark);
+  border-radius: 2px;
+}
+.ear {
+  position: absolute;
+  top: -7px;
+  width: 12px; height: 12px;
+  background: var(--fur);
+  clip-path: polygon(0 100%, 42% 0, 100% 100%);
+}
+.ear::after {
+  content: "";
+  position: absolute;
+  left: 3px; top: 5px;
+  width: 6px; height: 6px;
+  background: var(--ear-inner);
+  clip-path: polygon(0 100%, 50% 0, 100% 100%);
+}
+.ear-l { left: 1px; transform: rotate(-6deg); }
+.ear-r { right: 1px; transform: rotate(6deg); }
+
+.eye {
+  position: absolute;
+  top: 8px;
+  width: 5px; height: 7px;
+  background: var(--eye);
+  border-radius: 2px;
+  transform-origin: 50% 50%;
+}
+.eye::after {  /* shine */
+  content: "";
+  position: absolute;
+  top: 1px; right: 0;
+  width: 2px; height: 2px;
+  background: var(--eye-shine);
+  border-radius: 1px;
+}
+.eye-l { left: 8px; }
+.eye-r { left: 17px; }
+
+.nose {
+  position: absolute;
+  bottom: 6px; right: 6px;
+  width: 5px; height: 3px;
+  background: var(--nose);
+  border-radius: 2px;
+}
+.mouth {
+  position: absolute;
+  bottom: 2px; right: 5px;
+  width: 7px; height: 2px;
+  background: var(--fur-shadow);
+  border-radius: 2px;
+}
+.cheek {
+  position: absolute;
+  bottom: 4px;
+  width: 4px; height: 2px;
+  background: rgba(231,154,166,0.55);
+  border-radius: 2px;
+  opacity: 0;
+}
+.cheek-l { left: 3px; }
+.cheek-r { right: 12px; }
+
+/* =========================================================================
+   FLOATING EXTRAS (outside the cat, so no outline)
+   ========================================================================= */
+.zzz, .joy { position: absolute; top: 6px; left: 50%; z-index: 6; display: none; }
+.zzz span, .joy span {
+  position: absolute;
+  font-family: var(--font);
+  font-weight: bold;
+}
+.zzz span { color: var(--accent-2); }
+.joy span { color: #ff7b9c; }
+
+.zzz span:nth-child(1) { font-size: 9px;  left: 14px; }
+.zzz span:nth-child(2) { font-size: 12px; left: 24px; }
+.zzz span:nth-child(3) { font-size: 15px; left: 36px; }
+.joy span:nth-child(1) { font-size: 11px; left: 6px; }
+.joy span:nth-child(2) { font-size: 14px; left: 22px; }
+.joy span:nth-child(3) { font-size: 10px; left: 40px; }
+
+.cat-stage[data-state="sleep"] .zzz { display: block; }
+.cat-stage[data-state="sleep"] .zzz span { animation: zfloat 2.6s ease-in-out infinite; }
+.cat-stage[data-state="sleep"] .zzz span:nth-child(2) { animation-delay: .5s; }
+.cat-stage[data-state="sleep"] .zzz span:nth-child(3) { animation-delay: 1s; }
+
+.cat-stage[data-state="celebrate"] .joy { display: block; }
+.cat-stage[data-state="celebrate"] .joy span { animation: joyfloat 1s ease-out infinite; }
+.cat-stage[data-state="celebrate"] .joy span:nth-child(2) { animation-delay: .18s; }
+.cat-stage[data-state="celebrate"] .joy span:nth-child(3) { animation-delay: .36s; }
+
+/* =========================================================================
+   ANIMATION STATES
+   ========================================================================= */
+
+/* ---- IDLE: breathing, blinking, gentle tail sway, occasional look ---- */
+.state-idle .body { animation: breathe 3.2s ease-in-out infinite; transform-origin: 50% 100%; }
+.state-idle .head { animation: headbreathe 3.2s ease-in-out infinite; }
+.state-idle .tail { animation: tailSway 3s ease-in-out infinite; }
+.state-idle .eye  { animation: blink 4.5s infinite; }
+.cat.looking .head { transform: translateX(-3px) rotate(-7deg); }
+
+/* ---- WALK: 4-leg gait + body bob + brisk tail ---- */
+.state-walk .leg-front-near,
+.state-walk .leg-back-far  { animation: legSwingA .42s linear infinite; }
+.state-walk .leg-front-far,
+.state-walk .leg-back-near { animation: legSwingB .42s linear infinite; }
+.state-walk .body { animation: bob .42s ease-in-out infinite; transform-origin: 50% 100%; }
+.state-walk .head { animation: headbob .42s ease-in-out infinite; }
+.state-walk .tail { animation: tailWag .42s ease-in-out infinite; }
+.state-walk .cat-shadow { }
+
+/* ---- SIT: lowered rump, back legs folded, tail curls, front legs straight ---- */
+.state-sit .body { height: 26px; bottom: 9px; border-radius: 16px 12px 6px 6px; }
+.state-sit .head { bottom: 26px; }
+.state-sit .leg-back-far,
+.state-sit .leg-back-near { height: 7px; border-radius: 4px; }
+.state-sit .leg-front-near { height: 17px; left: 46px; }
+.state-sit .leg-front-far  { height: 17px; left: 41px; }
+.state-sit .tail { transform: rotate(58deg); bottom: 8px; left: 8px; }
+.state-sit .eye  { animation: blink 4.5s infinite; }
+
+/* ---- SLEEP: lying low, eyes closed, ears relaxed ---- */
+.state-sleep { transform: translateY(6px); }
+.state-sleep.face-left { transform: translateY(6px) scaleX(-1); }
+.state-sleep .body { height: 16px; bottom: 4px; border-radius: 12px; width: 50px; left: 10px; }
+.state-sleep .head { bottom: 6px; left: 44px; transform: rotate(6deg); }
+.state-sleep .leg { height: 6px; }
+.state-sleep .eye { height: 2px; top: 12px; border-radius: 2px; }
+.state-sleep .eye::after { display: none; }
+.state-sleep .tail { transform: rotate(40deg); bottom: 4px; left: 8px; }
+.state-sleep .ear-l { transform: rotate(-24deg); }
+.state-sleep .ear-r { transform: rotate(24deg); }
+
+/* ---- GROOM: sitting + head dips down to lick a paw ---- */
+.state-groom .body { height: 26px; bottom: 9px; border-radius: 16px 12px 6px 6px; }
+.state-groom .leg-back-far,
+.state-groom .leg-back-near { height: 7px; border-radius: 4px; }
+.state-groom .tail { transform: rotate(58deg); bottom: 8px; left: 8px; }
+.state-groom .head { animation: groomDip .9s ease-in-out infinite; transform-origin: 40% 100%; }
+
+/* ---- STRETCH: front legs reach forward, back rises, spine arches ---- */
+.state-stretch { animation: stretchPose 1.6s ease-in-out; }
+.state-stretch .head { transform: translate(6px, 6px) rotate(10deg); }
+.state-stretch .leg-front-near { transform: rotate(72deg); left: 52px; }
+.state-stretch .leg-front-far  { transform: rotate(72deg); left: 47px; }
+.state-stretch .body { transform: rotate(-9deg); }
+.state-stretch .tail { transform: rotate(-24deg); }
+
+/* ---- CELEBRATE: happy jumping + squinty smile + blushing ---- */
+.state-celebrate { animation: hop .5s ease-in-out infinite; }
+.state-celebrate .eye { height: 3px; top: 9px; border-radius: 3px 3px 0 0; }
+.state-celebrate .eye::after { display: none; }
+.state-celebrate .cheek { opacity: 1; }
+.state-celebrate .tail { animation: tailWag .3s ease-in-out infinite; }
+.state-celebrate .cat-shadow { }
+
+/* =========================================================================
+   KEYFRAMES
+   ========================================================================= */
+@keyframes breathe     { 0%,100%{ transform: scaleY(1); } 50%{ transform: scaleY(1.05); } }
+@keyframes headbreathe { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-1px); } }
+@keyframes blink       { 0%,92%,100%{ transform: scaleY(1); } 96%{ transform: scaleY(0.1); } }
+
+@keyframes tailSway { 0%,100%{ transform: rotate(-8deg); } 50%{ transform: rotate(10deg); } }
+@keyframes tailWag  { 0%,100%{ transform: rotate(-16deg); } 50%{ transform: rotate(20deg); } }
+
+@keyframes legSwingA { 0%{ transform: rotate(22deg); } 50%{ transform: rotate(-22deg); } 100%{ transform: rotate(22deg); } }
+@keyframes legSwingB { 0%{ transform: rotate(-22deg); } 50%{ transform: rotate(22deg); } 100%{ transform: rotate(-22deg); } }
+@keyframes bob      { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-2.5px); } }
+@keyframes headbob  { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-2px); } }
+
+@keyframes groomDip { 0%,100%{ transform: rotate(0) translateY(0); } 50%{ transform: rotate(24deg) translateY(3px); } }
+
+@keyframes stretchPose {
+  0%   { transform: translateX(0) scaleX(1); }
+  30%  { transform: translateX(-4px) scaleX(1.12); }
+  70%  { transform: translateX(-4px) scaleX(1.12); }
+  100% { transform: translateX(0) scaleX(1); }
+}
+.face-left.state-stretch { animation: stretchPoseL 1.6s ease-in-out; }
+@keyframes stretchPoseL {
+  0%   { transform: scaleX(-1); }
+  30%  { transform: translateX(4px) scaleX(-1.12); }
+  70%  { transform: translateX(4px) scaleX(-1.12); }
+  100% { transform: scaleX(-1); }
+}
+
+@keyframes hop { 0%,100%{ transform: translateY(0); } 40%{ transform: translateY(-14px); } 55%{ transform: translateY(-10px); } }
+.face-left.state-celebrate { animation: hopL .5s ease-in-out infinite; }
+@keyframes hopL { 0%,100%{ transform: translateY(0) scaleX(-1); } 40%{ transform: translateY(-14px) scaleX(-1); } 55%{ transform: translateY(-10px) scaleX(-1); } }
+
+@keyframes zfloat  { 0%{ transform: translateY(0); opacity: 0; } 30%{ opacity: 1; } 100%{ transform: translateY(-14px); opacity: 0; } }
+@keyframes joyfloat{ 0%{ transform: translateY(0); opacity: 0; } 30%{ opacity: 1; } 100%{ transform: translateY(-20px); opacity: 0; } }
+
+/* =========================================================================
+   SPEECH BUBBLE
+   ========================================================================= */
+.bubble {
+  position: absolute;
+  top: 0; left: 8px; right: 8px;
+  z-index: 30;
+  background: var(--accent-2);
+  color: #4a331f;
+  border: 3px solid var(--outline);
+  border-radius: 8px;
+  padding: 7px 8px 7px 8px;
+  font-size: 10px;
+  line-height: 1.35;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.35);
+  animation: pop .18s ease-out;
+}
+.bubble::after {
+  content: "";
+  position: absolute;
+  left: 50%; bottom: -9px; margin-left: -6px;
+  width: 0; height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 9px solid var(--outline);
+}
+.bubble.hidden { display: none; }
+.bubble-x {
+  position: absolute;
+  top: 2px; right: 3px;
+  width: 15px; height: 15px;
+  line-height: 12px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #4a331f;
+  font-size: 13px;
+  cursor: pointer;
+}
+.bubble-text { padding-right: 12px; }
+.bubble-actions { display: flex; gap: 5px; margin-top: 6px; }
+.bubble-actions button {
+  flex: 1;
+  font-family: var(--font);
+  font-size: 9px;
+  padding: 3px 4px;
+  color: #fff;
+  background: var(--accent);
+  border: 2px solid var(--outline);
+  border-radius: 5px;
+  cursor: pointer;
+}
+.bubble-actions button:hover { background: #ff9a45; }
+
+@keyframes pop { 0%{ transform: scale(.7); opacity: 0; } 100%{ transform: scale(1); opacity: 1; } }
+
+/* =========================================================================
+   CONTROL PANEL
+   ========================================================================= */
+.panel {
+  flex: 1 1 auto;
+  background: var(--bg);
+  border: 3px solid var(--border);
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 2px rgba(0,0,0,0.25), 3px 3px 0 rgba(0,0,0,0.35);
+  padding: 6px 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.clock {
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: var(--accent-2);
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+}
+.clock.running { color: var(--good); }
+
+.presets { display: flex; gap: 4px; justify-content: space-between; }
+.chip {
+  flex: 1;
+  font-family: var(--font);
+  font-size: 11px;
+  color: var(--text);
+  background: var(--bg-2);
+  border: 2px solid var(--border);
+  border-radius: 5px;
+  padding: 3px 0;
+  cursor: pointer;
+  transition: background-color .12s ease, color .12s ease, transform .08s ease;
+}
+.chip:hover { transform: translateY(-1px); border-color: var(--border-hi); }
+.chip.active { background: var(--accent); color: #3a2412; border-color: var(--accent-2); }
+
+.custom { display: flex; gap: 4px; }
+.custom-input {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font);
+  font-size: 11px;
+  color: var(--text);
+  background: var(--bg-2);
+  border: 2px solid var(--border);
+  border-radius: 5px;
+  padding: 3px 6px;
+}
+.custom-input:focus { outline: none; border-color: var(--accent); }
+.mini-btn {
+  font-family: var(--font);
+  font-size: 10px;
+  color: var(--text);
+  background: var(--bg-2);
+  border: 2px solid var(--border);
+  border-radius: 5px;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+.mini-btn:hover { border-color: var(--border-hi); }
+
+.actions { display: flex; gap: 5px; margin-top: 1px; }
+.btn {
+  flex: 1;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: bold;
+  padding: 6px 0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform .08s ease, background-color .12s ease;
+}
+.btn:active { transform: translateY(1px); }
+.btn.primary {
+  color: #3a2412;
+  background: var(--accent);
+  border: 2px solid var(--accent-2);
+}
+.btn.primary:hover { background: #ffb066; }
+.btn.primary.paused { background: var(--good); border-color: #d6f5cd; color: #1f3a19; }
+.btn.ghost {
+  color: var(--muted);
+  background: transparent;
+  border: 2px solid var(--border);
+}
+.btn.ghost:hover { color: var(--text); border-color: var(--border-hi); }
+
+/* remove number spinners */
+.custom-input::-webkit-outer-spin-button,
+.custom-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }

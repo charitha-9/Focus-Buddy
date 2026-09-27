@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:;" />
+  <title>Focus Buddy</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app" class="app">
+
+    <!-- Tiny top row: drag hint + close. The whole cat stage is the drag zone. -->
+    <button id="closeBtn" class="close-btn no-drag" data-testid="close-app-button" title="Close">×</button>
+
+    <!-- CAT STAGE (draggable). Dragging this moves the real desktop window. -->
+    <div id="catStage" class="cat-stage drag-zone" data-state="idle" data-testid="cat-stage">
+      <div class="cat-shadow" id="catShadow"></div>
+
+      <!-- Rigged pixel cat: every body part is its own block so legs, tail,
+           ears and eyes can be animated separately. -->
+      <div id="cat" class="cat state-idle" data-testid="pixel-cat">
+        <!-- tail (behind body) -->
+        <div class="tail">
+          <span class="t t1"></span>
+          <span class="t t2"></span>
+          <span class="t t3"></span>
+          <span class="t t4 tip"></span>
+        </div>
+        <!-- far legs (behind body) -->
+        <div class="leg leg-back-far"></div>
+        <div class="leg leg-front-far"></div>
+        <!-- body -->
+        <div class="body">
+          <span class="stripe s1"></span>
+          <span class="stripe s2"></span>
+          <span class="stripe s3"></span>
+          <span class="belly"></span>
+        </div>
+        <!-- near legs (in front of body) -->
+        <div class="leg leg-back-near"></div>
+        <div class="leg leg-front-near"></div>
+        <!-- head -->
+        <div class="head">
+          <div class="ear ear-l"></div>
+          <div class="ear ear-r"></div>
+          <span class="hstripe"></span>
+          <div class="eye eye-l"></div>
+          <div class="eye eye-r"></div>
+          <div class="nose"></div>
+          <div class="mouth"></div>
+          <div class="cheek cheek-l"></div>
+          <div class="cheek cheek-r"></div>
+        </div>
+      </div>
+
+      <!-- floating extras kept OUTSIDE the cat so they aren't outlined -->
+      <div class="zzz" aria-hidden="true"><span>z</span><span>z</span><span>z</span></div>
+      <div class="joy" aria-hidden="true"><span>♥</span><span>♥</span><span>♥</span></div>
+
+      <!-- speech bubble -->
+      <div id="bubble" class="bubble hidden" data-testid="speech-bubble">
+        <button id="bubbleClose" class="bubble-x no-drag" data-testid="bubble-close">×</button>
+        <div id="bubbleText" class="bubble-text" data-testid="bubble-text"></div>
+        <div id="bubbleActions" class="bubble-actions"></div>
+      </div>
+    </div>
+
+    <!-- COMPACT CONTROL PANEL (not draggable, fully clickable) -->
+    <div class="panel no-drag">
+      <div id="clock" class="clock" data-testid="timer-display">25:00</div>
+
+      <div class="presets" data-testid="preset-row">
+        <button class="chip" data-min="10" data-testid="preset-10">10</button>
+        <button class="chip active" data-min="25" data-testid="preset-25">25</button>
+        <button class="chip" data-min="45" data-testid="preset-45">45</button>
+        <button class="chip" data-min="60" data-testid="preset-60">60</button>
+      </div>
+
+      <div class="custom">
+        <input id="customInput" class="custom-input" type="number" min="1" max="180"
+               placeholder="1-180" data-testid="custom-minutes-input" />
+        <button id="customSet" class="mini-btn" data-testid="custom-set-button">set</button>
+      </div>
+
+      <div class="actions">
+        <button id="startPauseBtn" class="btn primary" data-testid="start-pause-button">Start</button>
+        <button id="resetBtn" class="btn ghost" data-testid="reset-button">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="cat.js"></script>
+  <script src="timer.js"></script>
+  <script src="interactions.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
