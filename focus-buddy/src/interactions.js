@@ -7,7 +7,7 @@
   const SAY = {
     pause:  'Taking a tiny break 🐾',
     reset:  'Ready when you are!',
-    doneFmt: (min) => `Study session complete! 🎉\nYou studied for ${min} minutes!`
+    doneFmt: (min) => `Study session complete! 🎉\nYou studied for ${min} minute${min === 1 ? '' : 's'}!`
   };
 
   // Mid-study check-ins. Some have quick action buttons.

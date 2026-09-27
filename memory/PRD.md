@@ -65,6 +65,17 @@ timer that lives on the desktop.
   cannot be exercised in this headless Linux container; code follows standard
   Electron IPC patterns and boots without errors. Verified on-Windows by user.
 
+### Update 3 (2026-06-27) — core verification & hardening
+- Fixed double-drag bug: removed native `-webkit-app-region: drag` so only the
+  manual mousedown->IPC `moveBy` drag runs (manual path clamps to work area).
+- Hardened security: `sandbox: true` (with contextIsolation:true,
+  nodeIntegration:false). Electron boots cleanly under xvfb with this config.
+- testing_agent renderer suite: 12/12 PASS (presets, custom clamp 37/500->180/
+  0->1, start countdown + cat study behaviours, natural state alternation,
+  pause bubble, reset bubble, FULL 1-min end-to-end finish->celebrate bubble,
+  streak 0->1, clock restore, bubble close, coat classes, sound toggle, no app
+  console errors). Fixed cosmetic pluralization '1 minute(s)'.
+
 ## Backlog / future
 - P2: settings (sound on finish, cat color toggle black/orange, movement calmness).
 - P2: session history / streaks (would need local storage).
