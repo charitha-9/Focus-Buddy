@@ -65,6 +65,19 @@ timer that lives on the desktop.
   cannot be exercised in this headless Linux container; code follows standard
   Electron IPC patterns and boots without errors. Verified on-Windows by user.
 
+### Update 4 (2026-06-27) — CAT-ONLY interaction model
+- Default = cat-only window (210x150); `.panel` hidden by default.
+- Click-vs-drag on the cat stage: small press-release toggles the panel;
+  press-move drags the real window. Bubble/panel marked no-drag.
+- main.js: clamp() now uses live window size; new `fb:set-compact` IPC resizes
+  the real window between compact (150) and full (300), bottom-edge anchored;
+  window launches compact.
+- preload.js: exposes `setPanel(open)`.
+- startSession/resetSession/finishSession all hide the panel (cat-only);
+  pause keeps panel open for Resume. Roaming now includes 'sleep'.
+- testing_agent regression: 11/11 PASS (cat-only boot, click toggle, controls,
+  start hides panel, roaming alternation, mid-session reopen, pause, reset,
+  1-min completion with hidden panel + streak, bubble dismiss, coat/sound).
 ### Update 3 (2026-06-27) — core verification & hardening
 - Fixed double-drag bug: removed native `-webkit-app-region: drag` so only the
   manual mousedown->IPC `moveBy` drag runs (manual path clamps to work area).

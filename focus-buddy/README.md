@@ -34,13 +34,16 @@ The installer lands in the `dist/` folder.
 
 ## 🎮 How to use it
 
-- **Drag the cat** anywhere on your desktop (grab the cat, not the buttons).
+- On launch you see **only the tiny cat** — no timer box. Drag it anywhere.
+- **Click the cat** to open the timer controls. Click again to tuck them away.
 - **Pick a time**: tap 10 / 25 / 45 / 60, or type any number `1–180` and press **set**.
-- **Start**: the timer counts down and the cat starts wandering your desktop.
-- **Pause**: countdown and wandering stop, the cat rests, "Taking a tiny break 🐾".
-- **Reset**: clears the session and restores your chosen time.
-- **Finish**: at `00:00` the cat does a happy jump and says the session is done.
-- **×** (top-right): closes the app.
+- **Start**: the controls hide, the countdown runs in the background, and the
+  cat roams your desktop (walking, sitting, grooming, stretching, napping…).
+- **Click the cat anytime** during a session to bring the controls back.
+- **Pause**: countdown + roaming stop, the cat rests, "Taking a tiny break 🐾".
+- **Reset**: clears the session, restores your time, back to cat-only idle.
+- **Finish**: at `00:00` the cat celebrates with a small message — no big box.
+- **×** (top-right) quits; **Ctrl+Shift+F** or the tray icon hides/shows the cat.
 
 ---
 
